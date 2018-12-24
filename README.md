@@ -1,6 +1,5 @@
-=======
 # Online-Prediction-Benchmarks
-Research Benchmarks for Online Prediction Tasks.
+Research Benchmarks for Online Prediction Tasks. The initial commit is transferred from [DeepInterestNetwork](https://github.com/zhougr1993/DeepInterestNetwork), we acknowledge and appreciate the original authors' efforts here.
 # DeepInterestNetwork
 Deep Interest Network for Click-Through Rate Prediction
 
