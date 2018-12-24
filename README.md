@@ -18,10 +18,10 @@ Bibtex:
 ```
 
 ## Requirements
-* Python >= 2.6.1
-* NumPy >= 1.12.1
-* Pandas >= 0.20.1
-* TensorFlow >= 1.4.0 (Probably earlier version should work too, though I didn't test it)
+* Python >= 3.6.1
+* NumPy >= 1.15.0
+* Pandas >= 0.23.4
+* TensorFlow >= 1.8.0
 * GPU with memory >= 10G
 
 ## Download dataset and preprocess
