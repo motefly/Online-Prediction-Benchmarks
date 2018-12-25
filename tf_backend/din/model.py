@@ -60,10 +60,10 @@ class Model(object):
     hist_j = tf.layers.dense(hist_j, hidden_units, name='hist_fcn', reuse=True)
 
     u_emb_j = hist_j
-    print u_emb_i.get_shape().as_list()
-    print u_emb_j.get_shape().as_list()
-    print i_emb.get_shape().as_list()
-    print j_emb.get_shape().as_list()
+    print(u_emb_i.get_shape().as_list())
+    print(u_emb_j.get_shape().as_list())
+    print(i_emb.get_shape().as_list())
+    print(j_emb.get_shape().as_list())
     #-- fcn begin -------
     din_i = tf.concat([u_emb_i, i_emb], axis=-1)
     din_i = tf.layers.batch_normalization(inputs=din_i, name='b1')
@@ -127,7 +127,7 @@ class Model(object):
     self.score_i = tf.reshape(self.score_i, [-1, 1])
     self.score_j = tf.reshape(self.score_j, [-1, 1])
     self.p_and_n = tf.concat([self.score_i, self.score_j], axis=-1)
-    print self.p_and_n.get_shape().as_list()
+    print(self.p_and_n.get_shape().as_list())
 
 
     # Step variable
@@ -266,5 +266,5 @@ def attention_multi_items(queries, keys, keys_length):
   # Weighted sum
   outputs = tf.matmul(outputs, keys)
   outputs = tf.reshape(outputs, [-1, queries_nums, queries_hidden_units])  # [B, N, 1, H]
-  print outputs.get_shape().as_list()
+  print(outputs.get_shape().as_list())
   return outputs

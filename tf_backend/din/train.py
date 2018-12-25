@@ -7,8 +7,9 @@ import tensorflow as tf
 import sys
 from input import DataInput, DataInputTest
 from model import Model
+import pdb
 
-os.environ['CUDA_VISIBLE_DEVICES'] = '1'
+# os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 random.seed(1234)
 np.random.seed(1234)
 tf.set_random_seed(1234)
@@ -88,7 +89,7 @@ def _test(sess, model):
   auc_sum = 0.0
   score_arr = []
   predicted_users_num = 0
-  print "test sub items"
+  print("test sub items")
   for _, uij in DataInputTest(test_set, predict_batch_size):
     if predicted_users_num >= predict_users_num:
         break
@@ -108,13 +109,14 @@ with tf.Session(config=tf.ConfigProto(gpu_options=gpu_options)) as sess:
   sys.stdout.flush()
   lr = 1.0
   start_time = time.time()
-  for _ in range(50):
+  for _ in range(5):
 
     random.shuffle(train_set)
 
     epoch_size = round(len(train_set) / train_batch_size)
     loss_sum = 0.0
     for _, uij in DataInput(train_set, train_batch_size):
+      pdb.set_trace()
       loss = model.train(sess, uij, lr)
       loss_sum += loss
 
