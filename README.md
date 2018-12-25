@@ -1,5 +1,5 @@
 # Online-Prediction-Benchmarks
-Research Benchmarks for Online Prediction Tasks. The initial commit is transferred from [DeepInterestNetwork](https://github.com/zhougr1993/DeepInterestNetwork), we acknowledge and appreciate the original authors' efforts here.
+Research Benchmarks for Online Prediction Tasks. The initial commit is transferred from [DeepInterestNetwork](https://github.com/zhougr1993/DeepInterestNetwork) and [dnn_ctr](https://github.com/nzc/dnn_ctr), we acknowledge and appreciate the original authors' efforts here.
 # DeepInterestNetwork
 Deep Interest Network for Click-Through Rate Prediction
 
@@ -62,3 +62,21 @@ tensorboard --logdir=save_path
 
 ## Dice
 There is also an implementation of Dice in folder 'din', you can try dice following the code annotation in `din/model.py` or replacing model.py with model\_dice.py
+
+
+# dnn_ctr
+The framework to deal with ctr problem
+
+details: https://zhuanlan.zhihu.com/p/32885978
+
+FNN's introduction and api: https://zhuanlan.zhihu.com/p/33045184
+
+PNN's introduction and api: https://zhuanlan.zhihu.com/p/33177517
+
+DeepFM's introduction and api: https://zhuanlan.zhihu.com/p/33479030
+
+AFM's introduction and api: https://zhuanlan.zhihu.com/p/33540686
+
+NFM's introduction and api: https://zhuanlan.zhihu.com/p/33587540
+
+DCN's introduction and api: https://zhuanlan.zhihu.com/p/33619389
