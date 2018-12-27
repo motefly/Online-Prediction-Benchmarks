@@ -12,32 +12,26 @@ def open_with_first_line_skipped(path, skip=True):
 def hashstr(str, nr_bins):
     return int(hashlib.md5(str.encode('utf8')).hexdigest(), 16)%(nr_bins-1)+1
 
-# To-do: make the category features  numerical
-def gen_num_feats(row, Type='category'):
+def gen_cate_feats(row, num_n, cate_n):
     feats = []
-    if Type != 'category':
-        for j in range(1, 14):
-            field = 'I{0}'.format(j)
-            value = row[field]
-            if value != '':
-                value = float(value)
+    for j in range(1, num_n+1):
+        field = 'I{0}'.format(j)
+        value = row[field]
+        if value != '':
+            value = int(value)
+            if value > 2:
+                value = int(math.log(float(value))**2)
             else:
-                value = 0
-            # if value != '':
-            #     value = int(value)
-            #     if value > 2:
-            #         value = int(math.log(float(value))**2)
-            #     else:
-            #         value = 'SP'+str(value)
-            key = field + '$' + str(value)
-            feats.append(key)
-    if Type != 'numeric':
-        for j in range(1, 27):
-            field = 'C{0}'.format(j)
-            value = row[field]
-            key = field + '$' + value
-            feats.append(key)
+                value = 'SP'+str(value)
+        key = field + '$' + str(value)
+        feats.append(key)
+    for j in range(1, cate_n+1):
+        field = 'C{0}'.format(j)
+        value = row[field]
+        key = field + '$' + value
+        feats.append(key)
     return feats
+    
 
 def gen_num_feats(row, num_n, cate_n):
     feats = []

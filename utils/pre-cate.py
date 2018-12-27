@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-import argparse, csv, sys
+import argparse, csv, sys, json
 
 from common import *
 from tqdm import tqdm
@@ -26,15 +26,24 @@ def gen_hashed_fm_feats(feats, nr_bins):
 frequent_feats = read_freqent_feats(args['threshold'])
 
 with open(args['out_path'], 'w') as f:
+    cate_emb_arr = [{} for i in range(args['numI'] + args['numC'])]
     for row in tqdm(csv.DictReader(open(args['csv_path']))):
         feats = []
-        for feat in gen_cate_feats(row, args['numI'], args['numC']):
+        for idx,feat in enumerate(gen_cate_feats(row, args['numI'], args['numC'])):
             field = feat.split('$')[0]
             Type, field = field[0], int(field[1:])
             if Type == 'C' and feat not in frequent_feats:
                 feat = feat.split('$')[0]+'less'
             if Type == 'C':
                 field += args['numI']
-            feats.append((field, feat))
-        feats = gen_hashed_fm_feats(feats, args['nr_bins'])
-        f.write(row['Label'] + ' ' + ' '.join(feats) + '\n')
+            if feat not in cate_emb_arr[idx]:
+                Idx = len(cate_emb_arr[idx])
+                cate_emb_arr[idx][feat] = str(Idx)
+            feats.append(cate_emb_arr[idx][feat])
+        f.write(row['Label'] + ',' + ','.join(feats) + '\n')
+    with open('cate_meta_info.json', 'w') as jf:
+        jstr = json.dumps(cate_emb_arr)
+        jf.write(jstr)
+    
+    import pdb
+    pdb.set_trace()
