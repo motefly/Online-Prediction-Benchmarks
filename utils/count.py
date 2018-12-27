@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse, csv, sys, collections
-
+from tqdm import tqdm
 from common import *
 
 if len(sys.argv) == 1:
@@ -13,7 +13,7 @@ args = vars(parser.parse_args())
 
 counts = collections.defaultdict(lambda : [0, 0, 0])
 
-for i, row in enumerate(csv.DictReader(open(args['csv_path'])), start=1):
+for i, row in tqdm(enumerate(csv.DictReader(open(args['csv_path'])), start=1)):
     label = row['Label']
     for j in range(1, 27):
         field = 'C{0}'.format(j)
@@ -25,10 +25,10 @@ for i, row in enumerate(csv.DictReader(open(args['csv_path'])), start=1):
         counts[field+','+value][2] += 1
     if i % 1000000 == 0:
         sys.stderr.write('{0}m\n'.format(int(i/1000000)))
-
-print('Field,Value,Neg,Pos,Total,Ratio')
-for key, (neg, pos, total) in sorted(counts.items(), key=lambda x: x[1][2]):
-    if total < 10:
-        continue
-    ratio = round(float(pos)/total, 5)
-    print(key+','+str(neg)+','+str(pos)+','+str(total)+','+str(ratio))
+with open('fc.trva.t10.txt', 'w') as f:
+    f.write('Field,Value,Neg,Pos,Total,Ratio\n')
+    for key, (neg, pos, total) in tqdm(sorted(counts.items(), key=lambda x: x[1][2])):
+        # if total < 10:
+            #continue
+        ratio = round(float(pos)/total, 5)
+        f.write(key+','+str(neg)+','+str(pos)+','+str(total)+','+str(ratio)+'\n')

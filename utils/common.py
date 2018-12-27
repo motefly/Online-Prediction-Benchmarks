@@ -12,32 +12,85 @@ def open_with_first_line_skipped(path, skip=True):
 def hashstr(str, nr_bins):
     return int(hashlib.md5(str.encode('utf8')).hexdigest(), 16)%(nr_bins-1)+1
 
-def gen_feats(row):
+# To-do: make the category features  numerical
+def gen_num_feats(row, Type='category'):
     feats = []
-    for j in range(1, 14):
-        field = 'I{0}'.format(j)
-        value = row[field]
-        if value != '':
-            value = int(value)
-            if value > 2:
-                value = int(math.log(float(value))**2)
+    if Type != 'category':
+        for j in range(1, 14):
+            field = 'I{0}'.format(j)
+            value = row[field]
+            if value != '':
+                value = float(value)
             else:
-                value = 'SP'+str(value)
-        key = field + '-' + str(value)
-        feats.append(key)
-    for j in range(1, 27):
-        field = 'C{0}'.format(j)
-        value = row[field]
-        key = field + '-' + value
-        feats.append(key)
+                value = 0
+            # if value != '':
+            #     value = int(value)
+            #     if value > 2:
+            #         value = int(math.log(float(value))**2)
+            #     else:
+            #         value = 'SP'+str(value)
+            key = field + '$' + str(value)
+            feats.append(key)
+    if Type != 'numeric':
+        for j in range(1, 27):
+            field = 'C{0}'.format(j)
+            value = row[field]
+            key = field + '$' + value
+            feats.append(key)
     return feats
 
-def read_freqent_feats(threshold=10):
+def gen_num_feats(row, num_n, cate_n):
+    feats = []
+    for j in range(1, num_n+1):
+        field = 'I{0}'.format(j)
+        value = row[field]
+        if value == '':
+            value = 'mean'
+        key = field + '$' + str(value)
+        feats.append(key)
+    for j in range(1, cate_n+1):
+        field = 'C{0}'.format(j)
+        value = row[field]
+        key = field + '$' + value
+        feats.append(key)
+    return feats
+    
+def gen_feats(row, Type='category'):
+    feats = []
+    if Type != 'category':
+        for j in range(1, 14):
+            field = 'I{0}'.format(j)
+            value = row[field]
+            if value != '':
+                value = float(value)
+            else:
+                value = 0
+            # if value != '':
+            #     value = int(value)
+            #     if value > 2:
+            #         value = int(math.log(float(value))**2)
+            #     else:
+            #         value = 'SP'+str(value)
+            key = field + '$' + str(value)
+            feats.append(key)
+    if Type != 'numeric':
+        for j in range(1, 27):
+            field = 'C{0}'.format(j)
+            value = row[field]
+            key = field + '$' + value
+            feats.append(key)
+    return feats
+
+def read_freqent_feats(threshold=10, rate=0.01):
     frequent_feats = set()
+    feat_freq = {}
     for row in csv.DictReader(open('fc.trva.t10.txt')):
-        if int(row['Total']) < threshold:
-            continue
-        frequent_feats.add(row['Field']+'-'+row['Value'])
+        feat_freq[row['Field']+'$'+row['Value']] = int(row['Total'])
+    feat_freq = sorted(feat_freq.items(), key=lambda kv: -kv[1])
+    total_feat = len(feat_freq)
+    for k, v in feat_freq[:int((1-rate)*total_feat)]:
+        if v >= threshold:
+            frequent_feats.add(k)
     return frequent_feats
 
 def split(path, nr_thread, has_header):
