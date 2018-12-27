@@ -1,5 +1,8 @@
 # Online-Prediction-Benchmarks
-Research Benchmarks for Online Prediction Tasks. The initial commit is transferred from [DeepInterestNetwork](https://github.com/zhougr1993/DeepInterestNetwork) and [dnn_ctr](https://github.com/nzc/dnn_ctr), we acknowledge and appreciate the original authors' efforts here.
+Research Benchmarks for Online Prediction Tasks. The initial commit is transferred from [DeepInterestNetwork](https://github.com/zhougr1993/DeepInterestNetwork), [dnn_ctr](https://github.com/nzc/dnn_ctr) and [kaggle-2014-criteo](https://github.com/guestwalk/kaggle-2014-criteo), we acknowledge and appreciate the original authors' efforts here.
+
+This repo is under construction...
+
 # DeepInterestNetwork
 Deep Interest Network for Click-Through Rate Prediction
 
