@@ -10,7 +10,7 @@ def parse_args():
         sys.argv.append('-h')
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', dest='nr_thread', default=12, type=int)
+    parser.add_argument('-s', dest='nr_thread', default=24, type=int)
     parser.add_argument('cvt_path')
     parser.add_argument('src1_path')
     # parser.add_argument('src2_path')

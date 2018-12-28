@@ -16,24 +16,40 @@ parser.add_argument('-t', '--threshold', type=int, default=int(10))
 parser.add_argument('-i', '--numI', type=int, default=int(13))
 parser.add_argument('-c', '--numC', type=int, default=int(26))
 parser.add_argument('-p', '--phase', type=str, default='train')
+parser.add_argument('-d', '--data', type=str, default='criteo_offline0')
+parser.add_argument('-u', '--update', type=str, default=None)
 parser.add_argument('csv_path', type=str)
 parser.add_argument('out_path', type=str)
 args = vars(parser.parse_args())
 
 def train_preprocess():
-    frequent_feats = read_freqent_feats(args['threshold'])
+    update = False
+    if args['update'] != None:
+        update = True
+        jstr = open('meta_data/' + args['update'] + '_num_meta_info.json', 'r').readline()
+        meta_info = json.loads(jstr)
+    frequent_feats = read_freqent_feats(args['threshold'], data=args['data'])
     with open(args['out_path'], 'w') as f:
         featsLst = []
         cate_emb_arr = [{} for i in range(args['numC'])]
         num_mean_arr = [{'cnt':0, 'val':0} for i in range(args['numI'])]
+        if update:
+            for i in range(args['numC']):
+                for j in meta_info[i+args['numI']]:
+                    cate_emb_arr[i][j] = meta_info[i+args['numI']][j][1]
+            for i in range(args['numI']):
+                num_mean_arr[i] = meta_info[i+args['numI']]['info'][1]
         MaxIdx = [0 for i in range(args['numC'])]
         for row in tqdm(csv.DictReader(open(args['csv_path']))):
             feats = []
             for feat in gen_num_feats(row, args['numI'], args['numC']):
                 field = feat.split('$')[0]
                 Type, field = field[0], int(field[1:])
-                if Type == 'C' and feat not in frequent_feats:
-                    feat = feat.split('$')[0]+'less'
+                if Type == 'C':
+                    if feat not in frequent_feats:
+                        feat = feat.split('$')[0]+'less'
+                    if update and feat not in cate_emb_arr[fieldIdx]:
+                        feat = feat.split('$')[0]+'less'
                 if Type == 'C':
                     fieldIdx = field-1
                     if feat not in cate_emb_arr[fieldIdx]:
@@ -42,17 +58,23 @@ def train_preprocess():
                         MaxIdx[fieldIdx] = max(MaxIdx[fieldIdx], len(cate_emb_arr[fieldIdx]))
                     cate_emb_arr[fieldIdx][feat]['Cnt'] += 1
                     cate_emb_arr[fieldIdx][feat]['Label'] += float(row['Label'])
+                    dynamic_encode = cate_emb_arr[field-1][feat]['Label']/cate_emb_arr[field-1][feat]['Cnt']
                 elif Type == 'I':
                     val = feat.split('$')[1]
                     if val != 'mean':
-                        num_mean_arr[field-1]['val'] += eval(val)
+                        try:
+                            num_mean_arr[field-1]['val'] += eval(val)
+                        except:
+                            import pdb
+                            pdb.set_trace()
                         num_mean_arr[field-1]['cnt'] += 1
-                feats.append((Type, field, feat))
+                    dynamic_encode = None
+                feats.append((Type, field, feat, dynamic_encode))
             featsLst.append(feats)
         meta_info = [{} for i in range(args['numI'] + args['numC'])]
         for feats in tqdm(featsLst):
             feat_row = []
-            for Type, field, feat in feats:
+            for Type, field, feat, dynamic_encode in feats:
                 if Type == 'C':
                     begin = len(feat_row)
                     MaxBit = len(bin(MaxIdx[field-1])) - 2
@@ -62,17 +84,18 @@ def train_preprocess():
                             feat_row.append(bin_code[idx])
                         else:
                             feat_row.append(str(0))
-                    feat_row.append(str(cate_emb_arr[field-1][feat]['Cnt'] / len(featsLst)))
-                    feat_row.append(str(cate_emb_arr[field-1][feat]['Label'] / cate_emb_arr[field-1][feat]['Cnt']))
-                    meta_info[field-1+args['numI']][feat] = feat_row[begin:]
+                    feat_row.append(str(dynamic_encode))
+                    feat_row.append(str(cate_emb_arr[fieldIdx][feat]['Cnt']/len(featsLst)))
+                    meta_info[field-1+args['numI']][feat] = [feat_row[begin:], cate_emb_arr[field-1][feat]]
                 elif Type == 'I':
                     begin = len(feat_row)
                     val = feat.split('$')[1]
+                    Mean = num_mean_arr[field-1]['val']/num_mean_arr[field-1]['cnt']
                     if val == 'mean':
-                        feat_row.append(str(num_mean_arr[field-1]['val']/num_mean_arr[field-1]['cnt']))
+                        feat_row.append(str(Mean))
                     else:
                         feat_row.append(val)
-                    meta_info[field-1]['mean'] = str(num_mean_arr[field-1]['val']/num_mean_arr[field-1]['cnt'])
+                    meta_info[field-1]['info'] = [str(Mean), num_mean_arr[field-1]]
             f.write(row['Label'] + ',' + ','.join(feat_row) + '\n')
         for idx in range(args['numC']):
             less = 'C' + str(idx+1) + 'less'
@@ -87,14 +110,14 @@ def train_preprocess():
                         less_encode.append(str(0))
                 less_encode.extend(['0','0'])
                 meta_info[idx+args['numI']][less] = less_encode
-        with open('num_meta_info.json', 'w') as jf:
+        with open('meta_data/' + args['data'] + '_num_meta_info.json', 'w') as jf:
             jstr = json.dumps(meta_info)
             jf.write(jstr)
 
 def test_preprocess():
-    jstr = open('num_meta_info.json', 'r').readline()
+    jstr = open('meta_data/' + args['data'] + '_num_meta_info.json', 'r').readline()
     meta_info = json.loads(jstr)
-    frequent_feats = read_freqent_feats(args['threshold'])
+    frequent_feats = read_freqent_feats(args['threshold'], data=args['data'])
     with open(args['out_path'], 'w') as f:
         for row in tqdm(csv.DictReader(open(args['csv_path']))):
             feat_row = []
@@ -107,11 +130,11 @@ def test_preprocess():
                     # if fea not in meta_info[field-1+args['numI']]):
                     #    feat = feat.split('$')[0]+'less'
                 if Type == 'C':
-                    feat_row.extend(meta_info[field-1+args['numI']][feat])
+                    feat_row.extend(meta_info[field-1+args['numI']][feat][0])
                 elif Type == 'I':
                     val = feat.split('$')[1]
                     if val == 'mean':
-                        feat_row.append(meta_info[field-1]['mean'])
+                        feat_row.append(meta_info[field-1]['mean'][0])
                     else:
                         feat_row.append(val)
             f.write(row['Label'] + ',' + ','.join(feat_row) + '\n')

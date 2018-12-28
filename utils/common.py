@@ -75,10 +75,10 @@ def gen_feats(row, Type='category'):
             feats.append(key)
     return feats
 
-def read_freqent_feats(threshold=10, rate=0.01):
+def read_freqent_feats(threshold=10, rate=0.01, data='criteo_offline0'):
     frequent_feats = set()
     feat_freq = {}
-    for row in csv.DictReader(open('fc.trva.t10.txt')):
+    for row in csv.DictReader(open('meta_data/' + data + '_fc.trva.t10.txt')):
         feat_freq[row['Field']+'$'+row['Value']] = int(row['Total'])
     feat_freq = sorted(feat_freq.items(), key=lambda kv: -kv[1])
     total_feat = len(feat_freq)
