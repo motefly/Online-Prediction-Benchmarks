@@ -48,25 +48,20 @@ def train_preprocess():
                 if Type == 'C':
                     if feat not in frequent_feats:
                         feat = feat.split('$')[0]+'less'
-                    if update and feat not in cate_emb_arr[fieldIdx]:
+                    if update and feat not in cate_emb_arr[field-1]:
                         feat = feat.split('$')[0]+'less'
                 if Type == 'C':
-                    fieldIdx = field-1
-                    if feat not in cate_emb_arr[fieldIdx]:
-                        item = {'Idx':len(cate_emb_arr[fieldIdx]), 'Cnt':0, 'Label':0}
-                        cate_emb_arr[fieldIdx][feat] = item
-                        MaxIdx[fieldIdx] = max(MaxIdx[fieldIdx], len(cate_emb_arr[fieldIdx]))
-                    cate_emb_arr[fieldIdx][feat]['Cnt'] += 1
-                    cate_emb_arr[fieldIdx][feat]['Label'] += float(row['Label'])
+                    if feat not in cate_emb_arr[field-1]:
+                        item = {'Idx':len(cate_emb_arr[field-1]), 'Cnt':0, 'Label':0}
+                        cate_emb_arr[field-1][feat] = item
+                        MaxIdx[field-1] = max(MaxIdx[field-1], len(cate_emb_arr[field-1]))
+                    cate_emb_arr[field-1][feat]['Cnt'] += 1
+                    cate_emb_arr[field-1][feat]['Label'] += float(row['Label'])
                     dynamic_encode = cate_emb_arr[field-1][feat]['Label']/cate_emb_arr[field-1][feat]['Cnt']
                 elif Type == 'I':
                     val = feat.split('$')[1]
                     if val != 'mean':
-                        try:
-                            num_mean_arr[field-1]['val'] += eval(val)
-                        except:
-                            import pdb
-                            pdb.set_trace()
+                        num_mean_arr[field-1]['val'] += eval(val)
                         num_mean_arr[field-1]['cnt'] += 1
                     dynamic_encode = None
                 feats.append((Type, field, feat, dynamic_encode))
@@ -85,7 +80,7 @@ def train_preprocess():
                         else:
                             feat_row.append(str(0))
                     feat_row.append(str(dynamic_encode))
-                    feat_row.append(str(cate_emb_arr[fieldIdx][feat]['Cnt']/len(featsLst)))
+                    feat_row.append(str(cate_emb_arr[field-1][feat]['Cnt']/len(featsLst)))
                     meta_info[field-1+args['numI']][feat] = [feat_row[begin:], cate_emb_arr[field-1][feat]]
                 elif Type == 'I':
                     begin = len(feat_row)

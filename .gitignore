@@ -1,5 +1,7 @@
 *~
 *.pyc
-*data*
+*data/
 *.txt
 *.json
+*.pkl
+*ckpt*
