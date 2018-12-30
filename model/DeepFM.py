@@ -187,7 +187,7 @@ class DeepFM(torch.nn.Module):
 
             print("Init deep part succeed")
 
-        print "Init succeed"
+        print("Init succeed")
 
     def forward(self, Xi, Xv):
         """

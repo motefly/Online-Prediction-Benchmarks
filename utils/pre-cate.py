@@ -33,7 +33,7 @@ def train_preprocess():
         update = True
         jstr = open('meta_data/' + args['update'] + '_cate_meta_info.json', 'r').readline()
         meta_info = json.loads(jstr)
-    frequent_feats = read_freqent_feats(args['threshold'], data=args['data'])
+    frequent_feats = read_freqent_feats(args['threshold'], data=args['data'], Type='cate')
     with open(args['out_path'], 'w') as f:
         cate_emb_arr = [{} for i in range(args['numI'] + args['numC'])]
         if update:
@@ -70,7 +70,7 @@ def train_preprocess():
 
 def test_preprocess():
     meta_info = json.loads(open('meta_data/' + args['data'] + '_cate_meta_info.json', 'r').readline())
-    frequent_feats = read_freqent_feats(args['threshold'], data=args['data'])
+    frequent_feats = read_freqent_feats(args['threshold'], data=args['data'], Type='cate')
     with open(args['out_path'], 'w') as f:
         for row in tqdm(csv.DictReader(open(args['csv_path']))):
             feats = []

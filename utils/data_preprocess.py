@@ -12,6 +12,9 @@ import sys
 import math
 import argparse
 import hashlib, csv, math, os, pickle, subprocess
+import json
+import numpy as np
+from tqdm import tqdm
 
 def gen_criteo_category_index(file_path):
     cate_dict = []
@@ -96,19 +99,43 @@ def read_raw_criteo_data(file_path, embedding_path, type):
 
     return result
 
-def read_criteo_data(file_path,emb_file):
+def read_criteo_data(dir_path,file_path,emb_file,numI,numC):
     result = {'label':[], 'index':[],'value':[],'feature_sizes':[]}
-    cate_dict = load_criteo_category_index(emb_file)
-    for item in cate_dict:
+    failed = False
+    if os.path.isdir(dir_path):
+        for item in result:
+            try:
+                result[item] = np.load(dir_path + item +'.npy').tolist()
+            except:
+                failed = True
+                break
+        if not failed:
+            return result
+    jstr = open(emb_file, 'r').readline()
+    meta_info = json.loads(jstr)
+    
+    # cate_dict = load_criteo_category_index(emb_file)
+    # for item in cate_dict:
+    #     result['feature_sizes'].append(len(item))
+    result['feature_sizes'] = [0 for i in range(numI+numC)]
+    for item in meta_info:
         result['feature_sizes'].append(len(item))
+        # Type = item[0]
+        # field = eval(item.replace('less','').split('$')[0][1:])
+        # if Type == 'C':
+        #     result['feature_sizes'][eval(item[1:])+numI-1] += 1
+        # elif Type =='I':
+        #     result['feature_sizes'][eval(item[1:])-1] += 1
     f = open(file_path,'r')
-    for line in f:
+    for line in tqdm(f):
         datas = line.strip().split(',')
         result['label'].append(int(datas[0]))
         indexs = [eval(item) for item in datas[1:]]
         values = [1 for i in range(39)]
         result['index'].append(indexs)
         result['value'].append(values)
+    for item in result:
+        np.save(np.array(result[item]), dir_path + item +'.npy')
     return result
 
 def gen_criteo_category_emb_from_libffmfile(filepath, dir_path):
@@ -155,14 +182,14 @@ def gen_emb_input_file(filepath, emb_file, dir_path):
 # cate_dict = gen_criteo_category_index('../data/train.txt')
 # write_criteo_category_index('../data/category_index.csv',cate_dict)
 
-gen_criteo_category_emb_from_libffmfile('../data/tiny_criteo.ffm','../data/tiny_criteo_emb.csv')
-import pdb
-pdb.set_trace()
-gen_emb_input_file('../data/tiny_criteo.ffm','../data/tiny_criteo_emb.csv','../data/tiny_train_input.csv')
+# gen_criteo_category_emb_from_libffmfile('../data/tiny_criteo.ffm','../data/tiny_criteo_emb.csv')
+# import pdb
+# pdb.set_trace()
+# gen_emb_input_file('../data/tiny_criteo.ffm','../data/tiny_criteo_emb.csv','../data/tiny_train_input.csv')
 
-result = read_criteo_data('../data/tiny_train_input.csv', '../data/tiny_criteo_emb.csv')
+# result = read_criteo_data('../data/tiny_train_input.csv', '../data/tiny_criteo_emb.csv')
 
-print(len(result['label']), len(result['index']), len(result['value']))
-print(result['feature_sizes'])
-for item in result['index']:
-    print(len(item))
+# print(len(result['label']), len(result['index']), len(result['value']))
+# print(result['feature_sizes'])
+# for item in result['index']:
+#     print(len(item))
