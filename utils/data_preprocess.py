@@ -105,12 +105,15 @@ def read_criteo_data(dir_path,file_path,emb_file,numI,numC):
     if os.path.isdir(dir_path):
         for item in result:
             try:
-                result[item] = np.load(dir_path + item +'.npy').tolist()
+                result[item] = np.load(dir_path + '_' + item +'.npy').tolist()
             except:
                 failed = True
                 break
         if not failed:
+            print("loaded from %s."%dir_path)
             return result
+    else:
+        os.mkdir(dir_path)    
     jstr = open(emb_file, 'r').readline()
     meta_info = json.loads(jstr)
     
@@ -131,11 +134,12 @@ def read_criteo_data(dir_path,file_path,emb_file,numI,numC):
         datas = line.strip().split(',')
         result['label'].append(int(datas[0]))
         indexs = [eval(item) for item in datas[1:]]
-        values = [1 for i in range(39)]
+        values = [1 for i in range(numI+numC)]
         result['index'].append(indexs)
         result['value'].append(values)
     for item in result:
-        np.save(np.array(result[item]), dir_path + item +'.npy')
+        np.save(dir_path + '_' + item +'.npy', np.array(result[item]))
+    print("loaded from raw and saved to %s"%dir_path)
     return result
 
 def gen_criteo_category_emb_from_libffmfile(filepath, dir_path):

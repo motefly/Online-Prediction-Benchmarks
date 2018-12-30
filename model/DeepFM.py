@@ -199,6 +199,8 @@ class DeepFM(torch.nn.Module):
             fm part
         """
         if self.use_fm:
+            import pdb
+            pdb.set_trace()
             fm_first_order_emb_arr = [(torch.sum(emb(Xi[:,i,:]),1).t()*Xv[:,i]).t() for i, emb in enumerate(self.fm_first_order_embeddings)]
             fm_first_order = torch.cat(fm_first_order_emb_arr,1)
             if self.is_shallow_dropout:
