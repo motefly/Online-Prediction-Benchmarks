@@ -157,7 +157,7 @@ class PNN(torch.nn.Module):
         self.deep_last_layer = nn.Linear(self.deep_layers[-1], self.n_class)
         print("Init nn part succeed")
 
-        print "Init succeed"
+        print("Init succeed")
 
     def forward(self, Xi, Xv):
         """
@@ -287,6 +287,7 @@ class PNN(torch.nn.Module):
 
         train_result = []
         valid_result = []
+        
         for epoch in range(self.n_epochs):
             total_loss = 0.0
             batch_iter = x_size // self.batch_size
@@ -487,13 +488,13 @@ class PNN(torch.nn.Module):
 """
     test part
 """
-import sys
-sys.path.append('../')
-from utils import data_preprocess
+# import sys
+# sys.path.append('../')
+# from utils import data_preprocess
 
-result_dict = data_preprocess.read_criteo_data('../data/train.csv', '../data/category_emb.csv')
-test_dict = data_preprocess.read_criteo_data('../data/test.csv', '../data/category_emb.csv')
-with torch.cuda.device(2):
-    pnn = PNN(39, result_dict['feature_sizes'], batch_size=128 * 64, verbose=True, use_cuda=True,weight_decay=0.00001, use_inner_product=True, use_outer_product=True).cuda()
-    pnn.fit(result_dict['index'], result_dict['value'], result_dict['label'],
-               test_dict['index'], test_dict['value'], test_dict['label'],ealry_stopping=True,refit=False,save_path='../data/model/pnn.pkl')
+# result_dict = data_preprocess.read_criteo_data('../data/train.csv', '../data/category_emb.csv')
+# test_dict = data_preprocess.read_criteo_data('../data/test.csv', '../data/category_emb.csv')
+# with torch.cuda.device(2):
+#     pnn = PNN(39, result_dict['feature_sizes'], batch_size=128 * 64, verbose=True, use_cuda=True,weight_decay=0.00001, use_inner_product=True, use_outer_product=True).cuda()
+#     pnn.fit(result_dict['index'], result_dict['value'], result_dict['label'],
+#                test_dict['index'], test_dict['value'], test_dict['label'],ealry_stopping=True,refit=False,save_path='../data/model/pnn.pkl')

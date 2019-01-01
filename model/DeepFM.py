@@ -199,8 +199,6 @@ class DeepFM(torch.nn.Module):
             fm part
         """
         if self.use_fm:
-            import pdb
-            pdb.set_trace()
             fm_first_order_emb_arr = [(torch.sum(emb(Xi[:,i,:]),1).t()*Xv[:,i]).t() for i, emb in enumerate(self.fm_first_order_embeddings)]
             fm_first_order = torch.cat(fm_first_order_emb_arr,1)
             if self.is_shallow_dropout:
@@ -308,14 +306,16 @@ class DeepFM(torch.nn.Module):
         if self.verbose:
             print("pre_process data ing...")
         is_valid = False
-        Xi_train = np.array(Xi_train).reshape((-1,self.field_size,1))
-        Xv_train = np.array(Xv_train)
-        y_train = np.array(y_train)
+        Xi_train = Xi_train.reshape((-1,self.field_size,1))
+        # Xi_train = np.array(Xi_train).reshape((-1,self.field_size,1))
+        # Xv_train = np.array(Xv_train)
+        # y_train = np.array(y_train)
         x_size = Xi_train.shape[0]
         if Xi_valid:
-            Xi_valid = np.array(Xi_valid).reshape((-1,self.field_size,1))
-            Xv_valid = np.array(Xv_valid)
-            y_valid = np.array(y_valid)
+            Xi_valid = Xi_valid.reshape((-1,self.field_size,1))
+            # Xi_valid = np.array(Xi_valid).reshape((-1,self.field_size,1))
+            # Xv_valid = np.array(Xv_valid)
+            # y_valid = np.array(y_valid)
             x_valid_size = Xi_valid.shape[0]
             is_valid = True
         if self.verbose:

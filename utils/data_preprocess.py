@@ -105,7 +105,7 @@ def read_criteo_data(dir_path,file_path,emb_file,numI,numC):
     if os.path.isdir(dir_path):
         for item in result:
             try:
-                result[item] = np.load(dir_path + '_' + item +'.npy').tolist()
+                result[item] = np.load(dir_path + '_' + item +'.npy')
             except:
                 failed = True
                 break
@@ -120,7 +120,6 @@ def read_criteo_data(dir_path,file_path,emb_file,numI,numC):
     # cate_dict = load_criteo_category_index(emb_file)
     # for item in cate_dict:
     #     result['feature_sizes'].append(len(item))
-    result['feature_sizes'] = [0 for i in range(numI+numC)]
     for item in meta_info:
         result['feature_sizes'].append(len(item))
         # Type = item[0]
@@ -137,8 +136,10 @@ def read_criteo_data(dir_path,file_path,emb_file,numI,numC):
         values = [1 for i in range(numI+numC)]
         result['index'].append(indexs)
         result['value'].append(values)
+    
     for item in result:
-        np.save(dir_path + '_' + item +'.npy', np.array(result[item]))
+        result[item] = np.array(item)
+        np.save(dir_path + '_' + item +'.npy', result[item])
     print("loaded from raw and saved to %s"%dir_path)
     return result
 
