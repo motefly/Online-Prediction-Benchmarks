@@ -22,13 +22,14 @@ field_size = args['numI'] + args['numC']
 feature_sizes = result_dict['feature_sizes']
 
 if args['model'] == 'deepFM':
-    deepfm = DeepFM.DeepFM(field_size,feature_sizes,verbose=True,use_cuda=True, weight_decay=0.00001,use_fm=True,use_ffm=False,use_deep=True,batch_size=128 * 64).cuda()
+    deepfm = DeepFM.DeepFM(field_size,feature_sizes,verbose=True,use_cuda=True, weight_decay=0.001,use_fm=True,use_ffm=False,use_deep=True,batch_size=1024).cuda()
     deepfm.fit(result_dict['index'], result_dict['value'], result_dict['label'],
-               test_dict['index'], test_dict['value'], test_dict['label'],ealry_stopping=True,refit=True)
+               test_dict['index'], test_dict['value'], test_dict['label'],
+               ealry_stopping=True,refit=True)
 
 elif args['model'] == 'PNN':
-    pnn = PNN.PNN(field_size, feature_sizes, batch_size=128 * 64, verbose=True, use_cuda=True,weight_decay=0.00001, use_inner_product=True, use_outer_product=True).cuda()
+    pnn = PNN.PNN(field_size, feature_sizes, batch_size=1024, verbose=True, use_cuda=True,weight_decay=0.00001, use_inner_product=True, use_outer_product=True).cuda()
     pnn.fit(result_dict['index'], result_dict['value'], result_dict['label'],
-             test_dict['index'], test_dict['value'], test_dict['label'],
-             ealry_stopping=True,refit=True)
+            test_dict['index'], test_dict['value'], test_dict['label'],
+            ealry_stopping=True,refit=True)
     pass

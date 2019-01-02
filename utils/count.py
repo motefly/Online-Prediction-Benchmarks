@@ -18,7 +18,9 @@ args = vars(parser.parse_args())
 
 cate_counts = collections.defaultdict(lambda : [0, 0])
 num_counts = collections.defaultdict(lambda : [0, 0])
+update = False
 if args['update'] != None:
+    update = True
     for row in csv.DictReader(open('meta_data/' + args['update'] + '_cate_counts.csv')):
         cate_counts[row['Field']+','+row['Value']][0] = int(row['Label'])
         cate_counts[row['Field']+','+row['Value']][1] = int(row['Total'])
@@ -32,6 +34,8 @@ for i, row in tqdm(enumerate(csv.DictReader(open(args['csv_path'])), start=1)):
     for j in range(1, args['numC']+1):
         field = 'C{0}'.format(j)
         value = row[field]
+        if update and field+','+value not in cate_counts:
+            continue
         cate_counts[field+','+value][0] += eval(label)
         cate_counts[field+','+value][1] += 1
     

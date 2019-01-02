@@ -24,13 +24,14 @@ args = vars(parser.parse_args())
 
 def train_preprocess():
     update = False
-    frequent_feats, cate_emb_arr, num_mean_arr, MaxIdx, Samples = read_freqent_feats(args['threshold'], data=args['data'])
+    frequent_feats, cate_emb_arr, num_mean_arr, MaxIdx, _ = read_freqent_feats(args['threshold'], data=args['data'])
+    Samples = 0
     meta_info = {'Samples':Samples}
     if args['update'] != None:
         update = True
         jstr = open('meta_data/' + args['update'] + '_num_meta_info.json', 'r').readline()
         meta_info = json.loads(jstr)
-        meta_info['Samples'] += Samples
+        Samples = meta_info['Samples']
     with open(args['out_path'], 'w') as f:
         cate_count = {}
         # to do
@@ -42,6 +43,7 @@ def train_preprocess():
                     for feat in meta_info['field']:
                         cate_count[field][feat] = meta_info[field][feat][1]
         for row in tqdm(csv.DictReader(open(args['csv_path']))):
+            Samples += 1
             feats = []
             for feat in gen_num_feats(row, args['numI'], args['numC']):
                 begin = len(feats)
@@ -61,7 +63,7 @@ def train_preprocess():
                     cate_count[field][feat]['Cnt'] += 1
                     cate_count[field][feat]['Label'] += float(row['Label'])
                     feats.append(str(round(cate_count[field][feat]['Label']/cate_count[field][feat]['Cnt'],6)))
-                    feats.append(str(round(cate_emb_arr[field][feat]['Cnt']/meta_info['Samples']*1000,6)))
+                    feats.append(str(round(cate_count[field][feat]['Cnt']/Samples*1000,6)))
                     MaxBit = len(bin(MaxIdx[field])) - 2
                     bin_code = bin(cate_emb_arr[field][feat]['Idx'])[2:][::-1]
                     for idx in range(MaxBit):
@@ -81,6 +83,7 @@ def train_preprocess():
                         feats.append(val)
                     meta_info[field] = str(Mean)
             f.write(row['Label'] + ',' + ','.join(feats) + '\n')
+        meta_info['Samples'] = Samples
         for idx in range(args['numC']):
             less = 'C' + str(idx+1) + 'less'
             field = 'C'+str(idx+1)

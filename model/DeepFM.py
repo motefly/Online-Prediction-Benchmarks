@@ -311,7 +311,7 @@ class DeepFM(torch.nn.Module):
         # Xv_train = np.array(Xv_train)
         # y_train = np.array(y_train)
         x_size = Xi_train.shape[0]
-        if Xi_valid:
+        if Xi_valid is not None:
             Xi_valid = Xi_valid.reshape((-1,self.field_size,1))
             # Xi_valid = np.array(Xi_valid).reshape((-1,self.field_size,1))
             # Xv_valid = np.array(Xv_valid)
@@ -335,6 +335,7 @@ class DeepFM(torch.nn.Module):
             optimizer = torch.optim.Adagrad(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
         criterion = F.binary_cross_entropy_with_logits
+        Best_metric = 0
 
         train_result = []
         valid_result = []
@@ -363,6 +364,7 @@ class DeepFM(torch.nn.Module):
                 if self.verbose:
                     if i % 100 == 99:  # print every 100 mini-batches
                         eval = self.evaluate(batch_xi, batch_xv, batch_y)
+                        Best_metric = max(eval, Best_metric)
                         print('[%d, %5d] loss: %.6f metric: %.6f time: %.1f s' %
                               (epoch + 1, i + 1, total_loss/100.0, eval, time()-batch_begin_time))
                         total_loss = 0.0
@@ -382,6 +384,7 @@ class DeepFM(torch.nn.Module):
                 print('[%d] loss: %.6f metric: %.6f time: %.1f s' %
                       (epoch + 1, valid_loss, valid_eval,time()-epoch_begin_time))
                 print('*' * 50)
+                print('Best_metric: %.6f' % Best_metric)
             if save_path:
                 torch.save(self.state_dict(),save_path)
             if is_valid and ealry_stopping and self.training_termination(valid_result):

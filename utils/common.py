@@ -96,7 +96,6 @@ def read_freqent_feats(threshold=10, rate=0.01,
             frequent_feats.add(k)
     if Type == 'cate':
         return frequent_feats
-    
     MaxIdx = {}
     for row in tqdm(csv.DictReader(open('meta_data/' + data + '_cate_counts.csv'))):
         feat = row['Field']+'$'+row['Value']
