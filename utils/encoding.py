@@ -13,8 +13,10 @@ parser.add_argument('-c', '--numC', type=int, default=int(26))
 parser.add_argument('-p', '--phase', type=str, default='train')
 parser.add_argument('-d', '--data', type=str, default='criteo_offline0')
 parser.add_argument('-u', '--update', type=str, default=None)
-parser.add_argument('csv_path', type=str)
-parser.add_argument('out_path', type=str)
+parser.add_argument('train_csv_path', type=str)
+parser.add_argument('train_out_path', type=str)
+parser.add_argument('test_csv_path', type=str)
+parser.add_argument('test_out_path', type=str)
 args = vars(parser.parse_args())
 
 class Num_encoder(object):
@@ -23,27 +25,36 @@ class Num_encoder(object):
         # cate_col = list(df.select_dtypes(include=['object']))
         self.cate_col = cate_col 
         # nume_col = list(set(list(df)) - set(cate_col))
+        self.dtype_dict = {}
+        for item in cate_col:
+            self.dtype_dict[item] = 'str'
+        for item in nume_col:
+            self.dtype_dict[item] = 'float'
         self.nume_col = nume_col
         self.encoder = ce.BinaryEncoder(cols=cate_col,verbose=1)
         self.threshold = threshold
         self.thresrate = thresrate
-        # for online update, to du
-        self.save_avgs = None
+        # for online update, to do
+        self.save_cate_avgs = {}
+        self.save_value_filter = {}
+        self.save_num_embs = {}
 
-    def transform_fit(self, inPath, outPath):
-        df = pd.read_csv(inPath)
+    def fit_transform(self, inPath, outPath):
+        df = pd.read_csv(inPath, dtype=self.dtype_dict)
+        
         print('Filtering and fillna features')
         for item in tqdm(self.cate_col):
             value_counts = df[item].value_counts()
             num = value_counts.shape[0]
-            value_filter_t = set(value_counts[value_counts<self.threshold].index)
-            value_filter_l = set(value_counts[int(num*self.thresrate):].index)
-            value_filter = list(value_filter_t | value_filter_l)
-            df[item] = df[item].replace(value_filter,'<LESS>')
+            self.save_value_filter[item] = list(value_counts[:int(num*self.thresrate)][value_counts>self.threshold].index.astype('object'))
+            rm_values = list(set(value_counts.index.astype('object'))-set(self.save_value_filter[item]))
+            if len(rm_values) != 0:
+                df[item] = df[item].replace(rm_values,'<LESS>')
             df[item] = df[item].fillna('<UNK>')
 
         for item in tqdm(self.nume_col):
             df[item] = df[item].fillna(df[item].mean())
+            self.save_num_embs[item] = {'sum':df[item].sum(), 'cnt':df[item].shape[0]}
 
         print('Binary encoding cate features')
         # binary_encoding
@@ -69,13 +80,41 @@ class Num_encoder(object):
             encode_df[item+'_t_mean'] = feat_encoding['mean']
             encode_df[item+'_t_count'] = feat_encoding['count']
 
-        self.save_avgs = df.groupby(by=cate_col)[self.label_name].agg(["mean", "count"])
+            self.save_cate_avgs[item] = df.groupby(by=item)[self.label_name].agg(["mean", "count"])
         encode_df.to_csv(outPath, index=False)
 
     # for test dataset
-    def fit(self, inPath, outPath):
-        # to do
-        pass
+    def transform(self, inPath, outPath):
+        df = pd.read_csv(inPath, dtype=self.dtype_dict)
+        print('Filtering and fillna features')
+        for item in tqdm(self.cate_col):
+            value_counts = df[item].value_counts()
+            rm_values = list(set(value_counts.index)-set(self.save_value_filter[item]))
+            if len(rm_values) != 0:
+                df[item] = df[item].replace(rm_values,'<LESS>')
+            df[item] = df[item].fillna('<UNK>')
+
+        for item in tqdm(self.nume_col):
+            mean = self.save_num_embs[item]['sum'] / self.save_num_embs[item]['cnt']
+            df[item] = df[item].fillna(mean)
+
+        print('Binary encoding cate features')
+        # binary_encoding
+        encode_df = self.encoder.transform(df)
+        
+        print('Target encoding cate features')
+        # dynamic_targeting_encoding
+        data_len = df.shape[0]
+        for item in tqdm(self.cate_col):
+            value_counts = set(df[item].value_counts().index)
+            for feat in value_counts:
+                if feat in self.save_cate_avgs[item].index:
+                    encode_df[item+'_t_mean'] = df[item].replace(feat, self.save_cate_avgs[item].loc[feat]['mean'])
+                    encode_df[item+'_t_count'] = df[item].replace(feat, self.save_cate_avgs[item].loc[feat]['count'])
+                else:
+                    encode_df[item+'_t_mean'] = df[item].replace(feat, 0)
+                    encode_df[item+'_t_count'] = df[item].replace(feat, 0)
+        encode_df.to_csv(outPath, index=False)
     
     # for update online dataset
     def update(self, inPath, outPath):
@@ -86,4 +125,5 @@ if __name__ == '__main__':
     cate_col = ['C'+str(i) for i in range(1, args['numC']+1)]
     nume_col = ['I'+str(i) for i in range(1, args['numI']+1)]
     ec = Num_encoder(cate_col, nume_col, args['threshold'], args['thresrate'])
-    ec.transform_fit(args['csv_path'], args['out_path'])
+    ec.fit_transform(args['train_csv_path'], args['train_out_path'])
+    ec.transform(args['test_csv_path'], args['test_out_path'])
