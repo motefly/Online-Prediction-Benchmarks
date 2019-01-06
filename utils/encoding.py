@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import category_encoders as ce
 from tqdm import tqdm
-import argparse
+import argparse, collections
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-n', '--nr_bins', type=int, default=int(1e+6))
@@ -41,15 +41,13 @@ class Num_encoder(object):
 
     def fit_transform(self, inPath, outPath):
         df = pd.read_csv(inPath, dtype=self.dtype_dict)
-        
         print('Filtering and fillna features')
         for item in tqdm(self.cate_col):
             value_counts = df[item].value_counts()
             num = value_counts.shape[0]
-            self.save_value_filter[item] = list(value_counts[:int(num*self.thresrate)][value_counts>self.threshold].index.astype('object'))
-            rm_values = list(set(value_counts.index.astype('object'))-set(self.save_value_filter[item]))
-            if len(rm_values) != 0:
-                df[item] = df[item].replace(rm_values,'<LESS>')
+            self.save_value_filter[item] = list(value_counts[:int(num*self.thresrate)][value_counts>self.threshold].index)
+            rm_values = set(value_counts.index)-set(self.save_value_filter[item])
+            df[item] = df[item].map(lambda x: '<LESS>' if x in rm_values else x)
             df[item] = df[item].fillna('<UNK>')
 
         for item in tqdm(self.nume_col):
@@ -65,22 +63,22 @@ class Num_encoder(object):
         data_len = df.shape[0]
         for item in tqdm(self.cate_col):
             feats = df[item].values
+            labels = df[self.label_name].values
             feat_encoding = {'mean':[], 'count':[]}
+            self.save_cate_avgs[item] = collections.defaultdict(lambda : [0, 0])
             for idx in range(data_len):
-                temp = df[:idx]
                 cur_feat = feats[idx]
-                avgs = temp.groupby(by=item)[self.label_name].agg(["mean", "count"])
                 # smoothing optional
-                if cur_feat in avgs.index:
-                    feat_encoding['mean'].append(avgs.loc[cur_feat]['mean'])
-                    feat_encoding['count'].append(avgs.loc[cur_feat]['count'])
+                if cur_feat in self.save_cate_avgs[item]:
+                    feat_encoding['mean'].append(self.save_cate_avgs[item][cur_feat][0]/self.save_cate_avgs[item][cur_feat][1])
+                    feat_encoding['count'].append(self.save_cate_avgs[item][cur_feat][1])
                 else:
                     feat_encoding['mean'].append(0)
                     feat_encoding['count'].append(0)
+                self.save_cate_avgs[item][cur_feat][0] += labels[idx]
+                self.save_cate_avgs[item][cur_feat][1] += 1
             encode_df[item+'_t_mean'] = feat_encoding['mean']
             encode_df[item+'_t_count'] = feat_encoding['count']
-
-            self.save_cate_avgs[item] = df.groupby(by=item)[self.label_name].agg(["mean", "count"])
         encode_df.to_csv(outPath, index=False)
 
     # for test dataset
@@ -89,9 +87,8 @@ class Num_encoder(object):
         print('Filtering and fillna features')
         for item in tqdm(self.cate_col):
             value_counts = df[item].value_counts()
-            rm_values = list(set(value_counts.index)-set(self.save_value_filter[item]))
-            if len(rm_values) != 0:
-                df[item] = df[item].replace(rm_values,'<LESS>')
+            rm_values = set(value_counts.index)-set(self.save_value_filter[item])
+            df[item] = df[item].map(lambda x: '<LESS>' if x in rm_values else x)
             df[item] = df[item].fillna('<UNK>')
 
         for item in tqdm(self.nume_col):
@@ -107,13 +104,10 @@ class Num_encoder(object):
         data_len = df.shape[0]
         for item in tqdm(self.cate_col):
             value_counts = set(df[item].value_counts().index)
-            for feat in value_counts:
-                if feat in self.save_cate_avgs[item].index:
-                    encode_df[item+'_t_mean'] = df[item].replace(feat, self.save_cate_avgs[item].loc[feat]['mean'])
-                    encode_df[item+'_t_count'] = df[item].replace(feat, self.save_cate_avgs[item].loc[feat]['count'])
-                else:
-                    encode_df[item+'_t_mean'] = df[item].replace(feat, 0)
-                    encode_df[item+'_t_count'] = df[item].replace(feat, 0)
+            # for feat in value_counts:
+            avgs = self.save_cate_avgs[item]
+            encode_df[item+'_t_mean'] = df[item].map(lambda x: avgs[x][0]/avgs[x][1] if x in avgs else 0)
+            encode_df[item+'_t_count'] = df[item].map(lambda x: avgs[x][1] if x in avgs else 0)
         encode_df.to_csv(outPath, index=False)
     
     # for update online dataset
