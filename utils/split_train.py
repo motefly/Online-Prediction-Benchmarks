@@ -14,7 +14,8 @@ import argparse
 import sys
 import random
 from tqdm import tqdm
-
+import random
+random.seed(1)
 s_path = sys.argv[1]
 # tr_path = sys.argv[2]
 te_path = sys.argv[2]
@@ -30,7 +31,7 @@ te_path = sys.argv[2]
 fes = []
 thres = []
 with open(s_path, 'rb') as raw:
-    lines = raw.readlines()
+    lines = raw.readlines()[:1000000]
 rates = [0.9, 0.1]
 Sum = 0
 for idx, rate in enumerate(rates):
@@ -44,6 +45,11 @@ for cnt,line in enumerate(tqdm(lines)):
         for f in fes:
             f.write(line)
         continue
+    # cnt = random.random()
+    # if cnt > 0.9:
+    #     fes[1].write(line)
+    # else:
+    #     fes[0].write(line)
     if cnt > thres[idx]:
         idx += 1
     fes[idx].write(line)

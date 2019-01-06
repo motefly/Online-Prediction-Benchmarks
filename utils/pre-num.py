@@ -90,14 +90,13 @@ def train_preprocess():
             if less not in meta_info[field]:
                 MaxBit = len(bin(MaxIdx[field])) - 2
                 bin_code = bin(MaxIdx[field])[2:][::-1]
-                less_encode = []
+                less_encode = ['0','0']
                 for jdx in range(MaxBit):
                     if jdx < len(bin_code):
                         less_encode.append(bin_code[jdx])
                     else:
                         less_encode.append(str(0))
-                less_encode.extend(['0','0'])
-                meta_info[field][less] = less_encode
+                meta_info[field][less] = [less_encode, {'Cnt':0, 'Label':0}]
         with open('meta_data/' + args['data'] + '_num_meta_info.json', 'w') as jf:
             jstr = json.dumps(meta_info)
             jf.write(jstr)

@@ -106,6 +106,8 @@ def read_criteo_data(dir_path,file_path,emb_file,numI,numC):
         for item in result:
             try:
                 result[item] = np.load(dir_path + '_' + item +'.npy')
+                if item == 'feature_sizes':
+                    result[item] = result[item].tolist()
             except:
                 failed = True
                 break
@@ -138,7 +140,7 @@ def read_criteo_data(dir_path,file_path,emb_file,numI,numC):
         result['value'].append(values)
     
     for item in result:
-        result[item] = np.array(item)
+        result[item] = np.array(result[item])
         np.save(dir_path + '_' + item +'.npy', result[item])
     print("loaded from raw and saved to %s"%dir_path)
     return result
