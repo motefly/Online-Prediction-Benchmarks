@@ -60,10 +60,10 @@ def train_preprocess():
                     if feat not in cate_count[field]:
                         item = {'Cnt':0, 'Label':0}
                         cate_count[field][feat] = item
+                    feats.append(str(round(cate_count[field][feat]['Label']/(cate_count[field][feat]['Cnt']+1e-5),6)))
+                    feats.append(str(round(cate_count[field][feat]['Cnt']/Samples*1000,6)))
                     cate_count[field][feat]['Cnt'] += 1
                     cate_count[field][feat]['Label'] += float(row['Label'])
-                    feats.append(str(round(cate_count[field][feat]['Label']/cate_count[field][feat]['Cnt'],6)))
-                    feats.append(str(round(cate_count[field][feat]['Cnt']/Samples*1000,6)))
                     MaxBit = len(bin(MaxIdx[field])) - 2
                     bin_code = bin(cate_emb_arr[field][feat]['Idx'])[2:][::-1]
                     for idx in range(MaxBit):

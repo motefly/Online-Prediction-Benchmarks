@@ -48,7 +48,7 @@ for i, row in tqdm(enumerate(csv.DictReader(open(args['csv_path'])), start=1)):
 
 with open('meta_data/' +args['data']+'_cate_counts.csv', 'w') as f:
     f.write('Field,Value,Label,Total\n')
-    for key, (label, total) in tqdm(sorted(cate_counts.items(), key=lambda x: x[1][1])):
+    for key, (label, total) in tqdm(sorted(cate_counts.items(), key=lambda x: x[1][1], reverse=True)):
         if total < args['thres']:
             continue
         # ratio = round(float(pos)/total, 5)
@@ -56,5 +56,5 @@ with open('meta_data/' +args['data']+'_cate_counts.csv', 'w') as f:
 
 with open('meta_data/' +args['data']+'_num_counts.csv', 'w') as f:
     f.write('Field,Sum,Cnt\n')
-    for key, (Sum, cnt) in tqdm(sorted(num_counts.items(), key=lambda x: x[0][1])):
+    for key, (Sum, cnt) in tqdm(sorted(num_counts.items(), key=lambda x: x[0][1], reverse=True)):
         f.write(key+','+str(Sum)+','+str(cnt)+'\n')
