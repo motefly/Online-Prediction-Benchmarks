@@ -364,7 +364,6 @@ class DeepFM(torch.nn.Module):
                 if self.verbose:
                     if i % 100 == 99:  # print every 100 mini-batches
                         eval = self.evaluate(batch_xi, batch_xv, batch_y)
-                        Best_metric = max(eval, Best_metric)
                         print('[%d, %5d] loss: %.6f metric: %.6f time: %.1f s' %
                               (epoch + 1, i + 1, total_loss/100.0, eval, time()-batch_begin_time))
                         total_loss = 0.0
@@ -379,6 +378,7 @@ class DeepFM(torch.nn.Module):
 
             if is_valid:
                 valid_loss, valid_eval = self.eval_by_batch(Xi_valid, Xv_valid, y_valid, x_valid_size)
+                Best_metric = max(valid_eval, Best_metric)
                 valid_result.append(valid_eval)
                 print('*' * 50)
                 print('[%d] loss: %.6f metric: %.6f time: %.1f s' %

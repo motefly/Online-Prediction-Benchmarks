@@ -56,11 +56,11 @@ class Cate_encoder(object):
             self.save_num_bins[item] = q_res[1]
         
 
-        print('Category encoding cate features')
+        print('Ordinal encoding cate features')
         # binary_encoding
-        encode_df = self.encoder.fit_transform(df)
+        df = self.encoder.fit_transform(df)
 
-        encode_df.to_csv(outPath, index=False)
+        df.to_csv(outPath, index=False)
 
     # for test dataset
     def transform(self, inPath, outPath):
@@ -75,11 +75,11 @@ class Cate_encoder(object):
         for item in tqdm(self.nume_col):
             df[item] = pd.cut(df[item], self.save_num_bins[item], labels=False, include_lowest=True).fillna(-1).astype('int')
 
-        print('Category encoding cate features')
+        print('Ordinal encoding cate features')
         # binary_encoding
-        encode_df = self.encoder.transform(df)
+        df = self.encoder.transform(df)
 
-        encode_df.to_csv(outPath, index=False)
+        df.to_csv(outPath, index=False)
         
     
     # for update online dataset

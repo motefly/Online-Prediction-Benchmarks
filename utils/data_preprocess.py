@@ -14,6 +14,7 @@ import argparse
 import hashlib, csv, math, os, pickle, subprocess
 import json
 import numpy as np
+import pandas as pd
 from tqdm import tqdm
 
 def gen_criteo_category_index(file_path):
@@ -99,6 +100,39 @@ def read_raw_criteo_data(file_path, embedding_path, type):
 
     return result
 
+def read_new_criteo_data(dir_path, csv_path):
+    result = {'label':[], 'index':[],'feature_sizes':[]}
+    failed = False
+    if os.path.isdir(dir_path):
+        for item in result:
+            try:
+                result[item] = np.load(dir_path + '_' + item +'.npy')
+                if item == 'feature_sizes':
+                    result[item] = result[item].tolist()
+            except:
+                failed = True
+                break
+        if not failed:
+            print("loaded from %s."%dir_path)
+            result['value'] = np.ones_like(result['index'])
+            return result
+    else:
+        os.mkdir(dir_path)
+    data = pd.read_csv(csv_path)
+    result['label']=np.array(data['Label'])
+    del data['Label']
+    del data['Id']
+    result['index']=np.array(data.values)
+    for item in list(data):
+        result['feature_sizes'].append(data[item].max()+1)
+    for item in result:
+        result[item] = np.array(result[item])
+        np.save(dir_path + '_' + item +'.npy', result[item])
+    print("loaded from raw and saved to %s"%dir_path)
+    result['value'] = np.ones_like(result['index'])
+    return result
+    
+    
 def read_criteo_data(dir_path,file_path,emb_file,numI,numC):
     result = {'label':[], 'index':[],'value':[],'feature_sizes':[]}
     failed = False
@@ -115,7 +149,7 @@ def read_criteo_data(dir_path,file_path,emb_file,numI,numC):
             print("loaded from %s."%dir_path)
             return result
     else:
-        os.mkdir(dir_path)    
+        os.mkdir(dir_path)
     jstr = open(emb_file, 'r').readline()
     meta_info = json.loads(jstr)
     
