@@ -32,7 +32,7 @@ fes = []
 thres = []
 with open(s_path, 'rb') as raw:
     lines = raw.readlines()[:1000000]
-rates = [0.9, 0.1]
+rates = [0.5, 0.1, 0.1, 0.1, 0.1, 0.1]
 Sum = 0
 for idx, rate in enumerate(rates):
     fes.append(open(te_path.split('.')[0] + str(idx) + '.' + te_path.split('.')[-1], 'wb'))

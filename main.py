@@ -10,13 +10,13 @@ parser.add_argument('-i', '--numI', type=int, default=int(13))
 parser.add_argument('-c', '--numC', type=int, default=int(26))
 parser.add_argument('-d', '--data', type=str, default='criteo_offline0')
 parser.add_argument('-m', '--model', type=str, default='deepFM')
-parser.add_argument('train_csv_path', type=str)
-parser.add_argument('test_csv_path', type=str)
+# parser.add_argument('train_csv_path', type=str)
+# parser.add_argument('test_csv_path', type=str)
 
 args = vars(parser.parse_args())
 
-result_dict = data_preprocess.read_new_criteo_data('data/%s_train/'%args['data'], args['train_csv_path'])#,'meta_data/' + args['data'] + '_cate_meta_info.json', args['numI'], args['numC'])
-test_dict = data_preprocess.read_new_criteo_data('data/%s_test/'%args['data'], args['test_csv_path'])#, 'meta_data/' + args['data'] + '_cate_meta_info.json', args['numI'], args['numC'])
+result_dict = data_preprocess.read_new_criteo_data('data/%s/train/'%args['data'])#,'meta_data/' + args['data'] + '_cate_meta_info.json', args['numI'], args['numC'])
+test_dict = data_preprocess.read_new_criteo_data('data/%s/test/'%args['data'])#, 'meta_data/' + args['data'] + '_cate_meta_info.json', args['numI'], args['numC'])
 
 field_size = args['numI'] + args['numC']
 feature_sizes = result_dict['feature_sizes']
