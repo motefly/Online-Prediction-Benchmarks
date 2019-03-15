@@ -67,7 +67,7 @@ class DeepFM(torch.nn.Module):
     Attention: only support logsitcs regression
     """
     def __init__(self,field_size, feature_sizes, embedding_size = 4, is_shallow_dropout = True, dropout_shallow = [0.5,0.5],
-                 h_depth = 2, deep_layers = [32, 32], is_deep_dropout = True, dropout_deep=[0.5, 0.5, 0.5],
+                 h_depth = 2, deep_layers = [32, 32], is_deep_dropout = False, dropout_deep=[0.5, 0.5, 0.5],
                  deep_layers_activation = 'relu', n_epochs = 64, batch_size = 256, learning_rate = 0.003,
                  optimizer_type = 'adam', is_batch_norm = False, verbose = False, random_seed = 950104, weight_decay = 0.0,
                  use_fm = True, use_ffm = False, use_deep = True, loss_type = 'logloss', eval_metric = roc_auc_score,

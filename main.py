@@ -25,11 +25,11 @@ if args['model'] == 'deepFM':
     deepfm = DeepFM.DeepFM(field_size,feature_sizes,verbose=True,use_cuda=True, weight_decay=0.001,use_fm=True,use_ffm=False,use_deep=True,batch_size=1024).cuda()
     deepfm.fit(result_dict['index'], result_dict['value'], result_dict['label'],
                test_dict['index'], test_dict['value'], test_dict['label'],
-               ealry_stopping=True,refit=True)
+               ealry_stopping=True,refit=False)
 
 elif args['model'] == 'PNN':
     pnn = PNN.PNN(field_size, feature_sizes, batch_size=1024, verbose=True, use_cuda=True,weight_decay=0.00001, use_inner_product=True, use_outer_product=True).cuda()
     pnn.fit(result_dict['index'], result_dict['value'], result_dict['label'],
             test_dict['index'], test_dict['value'], test_dict['label'],
-            ealry_stopping=True,refit=True)
+            ealry_stopping=True,refit=False)
     pass
